@@ -29,7 +29,7 @@ export function pageLayout({ title, description, path = "/", content, structured
     <meta name="twitter:card" content="summary">
     <meta name="theme-color" content="#10231d">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/site.css">
+    <link rel="stylesheet" href="/assets/site.css?v=${site.assetsVersion}">
     ${schemas.map((schema) => `<script type="application/ld+json">${JSON.stringify(schema).replaceAll("<", "\\u003c")}</script>`).join("\n    ")}
   </head>
   <body>
