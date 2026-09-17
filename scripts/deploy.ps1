@@ -1,36 +1,69 @@
 [CmdletBinding()]
-param()
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$Message
+)
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $ProjectRoot
 
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    throw "Git is required."
-}
-
-if (-not (Test-Path "node_modules/.bin/wrangler.cmd")) {
-    throw "Dependencies are missing. Run npm install first."
-}
-
-$Status = git status --porcelain
-if ($LASTEXITCODE -ne 0) { throw "Unable to read Git status." }
-if ($Status) {
-    throw "Deployment stopped: commit the current changes first so every deployment has a Git record."
-}
-
-$Branch = git branch --show-current
-$Commit = git rev-parse HEAD
-git merge-base --is-ancestor $Commit "origin/$Branch"
-if ($LASTEXITCODE -ne 0) {
-    throw "Deployment stopped: push commit $Commit to origin/$Branch first."
+foreach ($Command in @("git", "gh", "npm", "curl.exe")) {
+    if (-not (Get-Command $Command -ErrorAction SilentlyContinue)) {
+        throw "$Command is required."
+    }
 }
 
 npm test
 if ($LASTEXITCODE -ne 0) { throw "Build verification failed." }
 
-& "node_modules/.bin/wrangler.cmd" pages deploy dist --project-name workrigly --branch $Branch --commit-hash $Commit
-if ($LASTEXITCODE -ne 0) { throw "Cloudflare Pages deployment failed." }
+git add --all
+if ($LASTEXITCODE -ne 0) { throw "Unable to stage project changes." }
+
+git diff --cached --quiet
+$DiffExitCode = $LASTEXITCODE
+if ($DiffExitCode -eq 0) {
+    throw "Deployment stopped: there are no changes to commit."
+}
+if ($DiffExitCode -ne 1) {
+    throw "Unable to inspect staged changes."
+}
+
+git commit -m $Message
+if ($LASTEXITCODE -ne 0) { throw "Git commit failed." }
+
+$Branch = git branch --show-current
+$Commit = git rev-parse HEAD
+$Repository = gh repo view --json nameWithOwner --jq .nameWithOwner
+if ($LASTEXITCODE -ne 0 -or -not $Repository) { throw "Unable to identify the GitHub repository." }
+
+git push origin $Branch
+if ($LASTEXITCODE -ne 0) { throw "Git push failed." }
+
+Write-Host "Waiting for Cloudflare Pages to deploy commit $Commit..."
+$DeploymentComplete = $false
+for ($Attempt = 1; $Attempt -le 36; $Attempt++) {
+    $CheckRunsJson = gh api -H "Accept: application/vnd.github+json" "repos/$Repository/commits/$Commit/check-runs"
+    if ($LASTEXITCODE -ne 0) { throw "Unable to read GitHub check runs." }
+
+    $CheckRuns = ($CheckRunsJson | ConvertFrom-Json).check_runs
+    $CloudflareCheck = $CheckRuns | Where-Object { $_.name -eq "Cloudflare Pages" } | Select-Object -First 1
+
+    if ($CloudflareCheck -and $CloudflareCheck.status -eq "completed") {
+        if ($CloudflareCheck.conclusion -ne "success") {
+            throw "Cloudflare Pages finished with: $($CloudflareCheck.conclusion)."
+        }
+        $DeploymentComplete = $true
+        break
+    }
+
+    Start-Sleep -Seconds 5
+}
+
+if (-not $DeploymentComplete) {
+    throw "Timed out waiting for Cloudflare Pages. Check the deployment dashboard."
+}
 
 $Checks = @(
     @{ Name = "Homepage"; Url = "https://workrigly.com/"; Expected = 200 },
@@ -46,5 +79,11 @@ foreach ($Check in $Checks) {
     }
     Write-Host "$($Check.Name): PASS ($Code)"
 }
+
+$HttpCode = curl.exe --silent --show-error --output NUL --write-out "%{http_code}" http://workrigly.com/
+if ($HttpCode -ne "301") { throw "HTTP apex redirect returned $HttpCode; expected 301." }
+
+$WwwCode = curl.exe --silent --show-error --output NUL --write-out "%{http_code}" https://www.workrigly.com/
+if ($WwwCode -ne "301") { throw "WWW redirect returned $WwwCode; expected 301." }
 
 Write-Host "Deployment and public smoke tests passed for commit $Commit."

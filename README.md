@@ -21,11 +21,10 @@ The build has no runtime dependency: Cloudflare Pages serves the generated files
 
 ## Deploy
 
-Deployments must come from a clean, pushed Git commit:
+One command verifies the site, commits the change, pushes `main`, waits for the connected Cloudflare Pages build, and runs public smoke tests:
 
 ```powershell
-.\scripts\deploy.ps1
+.\scripts\deploy.ps1 -Message "Describe the change"
 ```
 
-The script builds, verifies, confirms that the current commit exists on `origin`, deploys `dist/` to the `workrigly` Cloudflare Pages project, and smoke-tests the public domain.
-
+The command requires authenticated `git` and GitHub CLI access. Cloudflare Pages is connected to the public repository and deploys every pushed commit automatically.
