@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 await import("./build.mjs");
 
-for (const file of ["index.html", "postman-alternatives/index.html", "notion-alternatives/index.html", "google-drive-alternatives/index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.svg", "assets/site.css"]) {
+for (const file of ["index.html", "postman-alternatives/index.html", "notion-alternatives/index.html", "google-drive-alternatives/index.html", "ynab-alternatives/index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.svg", "assets/site.css"]) {
   await access(resolve(root, "dist", file));
 }
 
@@ -12,6 +12,7 @@ const homepage = await readFile(resolve(root, "dist/index.html"), "utf8");
 const alternatives = await readFile(resolve(root, "dist/postman-alternatives/index.html"), "utf8");
 const notionAlternatives = await readFile(resolve(root, "dist/notion-alternatives/index.html"), "utf8");
 const googleDriveAlternatives = await readFile(resolve(root, "dist/google-drive-alternatives/index.html"), "utf8");
+const ynabAlternatives = await readFile(resolve(root, "dist/ynab-alternatives/index.html"), "utf8");
 const notFound = await readFile(resolve(root, "dist/404.html"), "utf8");
 const robots = await readFile(resolve(root, "dist/robots.txt"), "utf8");
 const sitemap = await readFile(resolve(root, "dist/sitemap.xml"), "utf8");
@@ -26,6 +27,7 @@ if (!sitemap.includes("<loc>https://workrigly.com/</loc>")) throw new Error("Hom
 if (!sitemap.includes("<loc>https://workrigly.com/postman-alternatives/</loc>")) throw new Error("Postman alternatives page is missing from sitemap.xml.");
 if (!sitemap.includes("<loc>https://workrigly.com/notion-alternatives/</loc>")) throw new Error("Notion alternatives page is missing from sitemap.xml.");
 if (!sitemap.includes("<loc>https://workrigly.com/google-drive-alternatives/</loc>")) throw new Error("Google Drive alternatives page is missing from sitemap.xml.");
+if (!sitemap.includes("<loc>https://workrigly.com/ynab-alternatives/</loc>")) throw new Error("YNAB alternatives page is missing from sitemap.xml.");
 if (!alternatives.includes('<link rel="canonical" href="https://workrigly.com/postman-alternatives/">')) throw new Error("Postman alternatives canonical is missing or incorrect.");
 if (!alternatives.includes('<meta name="robots" content="index,follow">')) throw new Error("Postman alternatives robots directive is missing.");
 if (!alternatives.includes('"@type":"ItemList"') || !alternatives.includes('"@type":"FAQPage"')) throw new Error("Required structured data is missing.");
@@ -65,4 +67,17 @@ if (uniqueGoogleDriveFactIds.size !== 120) throw new Error(`Expected 120 indepen
 if ((googleDriveAlternatives.match(/class="fact-source"/g) || []).length < googleDriveFactIds.length) throw new Error("Every Google Drive fact entry must display an official source.");
 if ((googleDriveAlternatives.match(/datetime="2026-09-17"/g) || []).length < googleDriveFactIds.length) throw new Error("Every Google Drive fact entry must display the current verification date.");
 
-console.log(`Build verification passed with ${uniqueFactIds.size + uniqueNotionFactIds.size + uniqueGoogleDriveFactIds.size} independently sourced fact entries.`);
+if (!ynabAlternatives.includes('<link rel="canonical" href="https://workrigly.com/ynab-alternatives/">')) throw new Error("YNAB alternatives canonical is missing or incorrect.");
+if (!ynabAlternatives.includes('<meta name="robots" content="index,follow">')) throw new Error("YNAB alternatives robots directive is missing.");
+if (!ynabAlternatives.includes('"@type":"ItemList"') || !ynabAlternatives.includes('"@type":"FAQPage"')) throw new Error("YNAB structured data is missing.");
+if ((ynabAlternatives.match(/<article class="alternative-card"/g) || []).length !== 8) throw new Error("Expected exactly eight reviewed YNAB alternatives.");
+if (/[一-鿿]/u.test(ynabAlternatives)) throw new Error("Chinese text found in the English YNAB page.");
+if (/localhost|placeholder/i.test(ynabAlternatives)) throw new Error("Forbidden placeholder or local text found in the YNAB page.");
+
+const ynabFactIds = [...ynabAlternatives.matchAll(/data-fact-id="([^"]+)"/g)].map((match) => match[1]);
+const uniqueYnabFactIds = new Set(ynabFactIds);
+if (uniqueYnabFactIds.size !== 120) throw new Error(`Expected 120 independently sourced YNAB fact entries; found ${uniqueYnabFactIds.size}.`);
+if ((ynabAlternatives.match(/class="fact-source"/g) || []).length < ynabFactIds.length) throw new Error("Every YNAB fact entry must display an official source.");
+if ((ynabAlternatives.match(/datetime="2026-09-17"/g) || []).length < ynabFactIds.length) throw new Error("Every YNAB fact entry must display the current verification date.");
+
+console.log(`Build verification passed with ${uniqueFactIds.size + uniqueNotionFactIds.size + uniqueGoogleDriveFactIds.size + uniqueYnabFactIds.size} independently sourced fact entries.`);

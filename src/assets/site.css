@@ -193,6 +193,8 @@ h3 { margin-bottom: .75rem; font-size: 1.35rem; }
 .comparison-hero h1 { max-width: 980px; font-size: clamp(2.8rem, 6.8vw, 5.7rem); }
 .google-drive-hero { padding-top: clamp(2rem, 4vw, 3.5rem); }
 .google-drive-hero h1 { max-width: 900px; margin-bottom: 1rem; font-size: clamp(2.7rem, 5.4vw, 4.7rem); }
+.compact-comparison-hero { padding-top: clamp(2rem, 4vw, 3.5rem); }
+.compact-comparison-hero h1 { max-width: 900px; margin-bottom: 1rem; font-size: clamp(2.7rem, 5.4vw, 4.7rem); }
 .top-answer { max-width: 980px; margin: 0 0 1rem; padding: 1rem 1.2rem; border-left: 4px solid var(--accent); background: rgba(255, 253, 247, .92); }
 .top-answer p { margin: 0; font-size: 1.02rem; line-height: 1.55; }
 .top-answer .answer-source { margin-top: .55rem; }
@@ -266,6 +268,8 @@ tbody th a { color: white; font-size: 1rem; text-underline-offset: .2em; }
   .shell { width: min(calc(100% - 1.5rem), 1120px); }
   .header-inner { min-height: 66px; }
   .site-nav { gap: .75rem; font-size: .77rem; }
+  .brand > span:last-child { display: none; }
+  .site-nav { min-width: 0; white-space: nowrap; }
   .site-nav a:first-child { display: none; }
   .hero-grid,
   .checklist-grid { grid-template-columns: 1fr; }

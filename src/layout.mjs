@@ -45,6 +45,7 @@ export function pageLayout({ title, description, path = "/", content, structured
           <a href="/postman-alternatives/">Postman</a>
           <a href="/notion-alternatives/">Notion</a>
           <a href="/google-drive-alternatives/">Google Drive</a>
+          <a href="/ynab-alternatives/">YNAB</a>
         </nav>
       </div>
     </header>

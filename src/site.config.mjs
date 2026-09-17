@@ -5,5 +5,5 @@ export const site = {
   title: "Workrigly — Practical Software Alternatives",
   description:
     "Clear guidance for choosing free, open-source, and self-hosted alternatives to paid software.",
-  assetsVersion: "20260917-3",
+  assetsVersion: "20260917-4",
 };
