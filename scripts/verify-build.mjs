@@ -4,12 +4,13 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 await import("./build.mjs");
 
-for (const file of ["index.html", "postman-alternatives/index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.svg", "assets/site.css"]) {
+for (const file of ["index.html", "postman-alternatives/index.html", "notion-alternatives/index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.svg", "assets/site.css"]) {
   await access(resolve(root, "dist", file));
 }
 
 const homepage = await readFile(resolve(root, "dist/index.html"), "utf8");
 const alternatives = await readFile(resolve(root, "dist/postman-alternatives/index.html"), "utf8");
+const notionAlternatives = await readFile(resolve(root, "dist/notion-alternatives/index.html"), "utf8");
 const notFound = await readFile(resolve(root, "dist/404.html"), "utf8");
 const robots = await readFile(resolve(root, "dist/robots.txt"), "utf8");
 const sitemap = await readFile(resolve(root, "dist/sitemap.xml"), "utf8");
@@ -22,6 +23,7 @@ if (!robots.includes("Sitemap: https://workrigly.com/sitemap.xml")) throw new Er
 if (!sitemap.includes("<lastmod>")) throw new Error("sitemap.xml entries must include lastmod.");
 if (!sitemap.includes("<loc>https://workrigly.com/</loc>")) throw new Error("Homepage is missing from sitemap.xml.");
 if (!sitemap.includes("<loc>https://workrigly.com/postman-alternatives/</loc>")) throw new Error("Postman alternatives page is missing from sitemap.xml.");
+if (!sitemap.includes("<loc>https://workrigly.com/notion-alternatives/</loc>")) throw new Error("Notion alternatives page is missing from sitemap.xml.");
 if (!alternatives.includes('<link rel="canonical" href="https://workrigly.com/postman-alternatives/">')) throw new Error("Postman alternatives canonical is missing or incorrect.");
 if (!alternatives.includes('<meta name="robots" content="index,follow">')) throw new Error("Postman alternatives robots directive is missing.");
 if (!alternatives.includes('"@type":"ItemList"') || !alternatives.includes('"@type":"FAQPage"')) throw new Error("Required structured data is missing.");
@@ -35,4 +37,17 @@ if (uniqueFactIds.size !== 136) throw new Error(`Expected 136 independently sour
 if ((alternatives.match(/class="fact-source"/g) || []).length < factIds.length) throw new Error("Every fact entry must display an official source.");
 if ((alternatives.match(/datetime="2026-09-17"/g) || []).length < factIds.length) throw new Error("Every fact entry must display the current verification date.");
 
-console.log(`Build verification passed with ${uniqueFactIds.size} independently sourced fact entries.`);
+if (!notionAlternatives.includes('<link rel="canonical" href="https://workrigly.com/notion-alternatives/">')) throw new Error("Notion alternatives canonical is missing or incorrect.");
+if (!notionAlternatives.includes('<meta name="robots" content="index,follow">')) throw new Error("Notion alternatives robots directive is missing.");
+if (!notionAlternatives.includes('"@type":"ItemList"') || !notionAlternatives.includes('"@type":"FAQPage"')) throw new Error("Notion structured data is missing.");
+if ((notionAlternatives.match(/<article class="alternative-card"/g) || []).length !== 8) throw new Error("Expected exactly eight reviewed Notion alternatives.");
+if (/[一-鿿]/u.test(notionAlternatives)) throw new Error("Chinese text found in the English Notion page.");
+if (/localhost|placeholder/i.test(notionAlternatives)) throw new Error("Forbidden placeholder or local text found in the Notion page.");
+
+const notionFactIds = [...notionAlternatives.matchAll(/data-fact-id="([^"]+)"/g)].map((match) => match[1]);
+const uniqueNotionFactIds = new Set(notionFactIds);
+if (uniqueNotionFactIds.size !== 120) throw new Error(`Expected 120 independently sourced Notion fact entries; found ${uniqueNotionFactIds.size}.`);
+if ((notionAlternatives.match(/class="fact-source"/g) || []).length < notionFactIds.length) throw new Error("Every Notion fact entry must display an official source.");
+if ((notionAlternatives.match(/datetime="2026-09-17"/g) || []).length < notionFactIds.length) throw new Error("Every Notion fact entry must display the current verification date.");
+
+console.log(`Build verification passed with ${uniqueFactIds.size + uniqueNotionFactIds.size} independently sourced fact entries.`);
