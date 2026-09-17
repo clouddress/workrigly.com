@@ -42,8 +42,9 @@ export function pageLayout({ title, description, path = "/", content, structured
         </a>
         <nav class="site-nav" aria-label="Primary navigation">
           <a href="/">Home</a>
-          <a href="/postman-alternatives/">Postman alternatives</a>
-          <a href="/notion-alternatives/">Notion alternatives</a>
+          <a href="/postman-alternatives/">Postman</a>
+          <a href="/notion-alternatives/">Notion</a>
+          <a href="/google-drive-alternatives/">Google Drive</a>
         </nav>
       </div>
     </header>

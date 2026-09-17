@@ -10,6 +10,7 @@ const pages = [
   { module: "../src/pages/index.mjs", source: "src/pages/index.mjs", output: "index.html", sitemap: true },
   { module: "../src/pages/postman-alternatives.mjs", source: "src/pages/postman-alternatives.mjs", output: "postman-alternatives/index.html", sitemap: true },
   { module: "../src/pages/notion-alternatives.mjs", source: "src/pages/notion-alternatives.mjs", output: "notion-alternatives/index.html", sitemap: true },
+  { module: "../src/pages/google-drive-alternatives.mjs", source: "src/pages/google-drive-alternatives.mjs", output: "google-drive-alternatives/index.html", sitemap: true },
   { module: "../src/pages/404.mjs", source: "src/pages/404.mjs", output: "404.html", sitemap: false },
 ];
 
