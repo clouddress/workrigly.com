@@ -25,7 +25,7 @@ export const alternatives = [
       fact("Other Postman assets", "Mock servers require manual recreation; multi-workspace bulk import is an Enterprise workflow that must be enabled for the organization.", source("Postman migration guide", "https://developer.konghq.com/how-to/migrate-collections-and-environments-from-postman-to-insomnia/"), source("Bulk migration guide", "https://developer.konghq.com/how-to/import-content-from-postman-to-multiple-insomnia-projects/")),
       fact("Migration time", "Not estimated; the official sources checked do not provide a general migration duration.", source("Postman migration guide", "https://developer.konghq.com/how-to/migrate-collections-and-environments-from-postman-to-insomnia/")),
       fact("Repository activity", "The official repository was not archived, and its latest visible default-branch commit was dated 2026-09-16 when checked.", source("Official repository", "https://github.com/Kong/insomnia"), source("Latest commit checked", "https://github.com/Kong/insomnia/commit/0d549eb8beb292b5aa8d65f81005cb7a4460fd14")),
-      fact("Current release", "The latest stable GitHub release checked was core@13.2.0, published 2026-08-25.", source("Official release", "https://github.com/Kong/insomnia/releases/tag/core%4013.2.0")),
+      fact("Current release", "The latest stable GitHub release checked was core 13.2.0, published 2026-08-25.", source("Official release", "https://github.com/Kong/insomnia/releases/tag/core%4013.2.0")),
     ],
   },
   {
