@@ -8,8 +8,9 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-export function pageLayout({ title, description, path = "/", content }) {
+export function pageLayout({ title, description, path = "/", content, structuredData = [] }) {
   const canonical = new URL(path, site.url).href;
+  const schemas = Array.isArray(structuredData) ? structuredData : [structuredData];
 
   return `<!doctype html>
 <html lang="${site.language}">
@@ -18,6 +19,7 @@ export function pageLayout({ title, description, path = "/", content }) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}">
+    <meta name="robots" content="index,follow">
     <link rel="canonical" href="${canonical}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="${site.name}">
@@ -28,6 +30,7 @@ export function pageLayout({ title, description, path = "/", content }) {
     <meta name="theme-color" content="#10231d">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/site.css">
+    ${schemas.map((schema) => `<script type="application/ld+json">${JSON.stringify(schema).replaceAll("<", "\\u003c")}</script>`).join("\n    ")}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -37,7 +40,10 @@ export function pageLayout({ title, description, path = "/", content }) {
           <span class="brand-mark" aria-hidden="true">W</span>
           <span>${site.name}</span>
         </a>
-        <span class="header-note">Better-fit software, without the sales pitch.</span>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="/">Home</a>
+          <a href="/postman-alternatives/">Postman alternatives</a>
+        </nav>
       </div>
     </header>
     <main id="main">${content}</main>
@@ -50,4 +56,3 @@ export function pageLayout({ title, description, path = "/", content }) {
   </body>
 </html>`;
 }
-
